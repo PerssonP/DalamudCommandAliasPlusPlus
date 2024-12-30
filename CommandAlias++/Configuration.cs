@@ -18,6 +18,6 @@ public class Configuration : IPluginConfiguration
     // the below exist just to make saving less cumbersome
     public void Save()
     {
-        CommandAliasPlusPlus.PluginInterface.SavePluginConfig(this);
+        PluginServices.PluginInterface.SavePluginConfig(this);
     }
 }

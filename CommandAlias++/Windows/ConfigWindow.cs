@@ -5,6 +5,7 @@ using Dalamud.Interface.Utility;
 using Dalamud.Interface.Windowing;
 using ImGuiNET;
 using Lumina.Excel.Sheets;
+using Dalamud.Plugin.Services;
 
 namespace CommandAliasPlusPlus.Windows;
 
@@ -89,7 +90,7 @@ public class ConfigWindow : Window, IDisposable
             if (child.Success)
             {
                 ImGui.TextUnformatted("Have a goat:");
-                var goatImage = CommandAliasPlusPlus.TextureProvider.GetFromFile("path").GetWrapOrDefault();
+                var goatImage = PluginServices.TextureProvider.GetFromFile("path").GetWrapOrDefault();
                 if (goatImage != null)
                 {
                     using (ImRaii.PushIndent(55f))
@@ -107,7 +108,7 @@ public class ConfigWindow : Window, IDisposable
                 // Example for other services that Dalamud provides.
                 // ClientState provides a wrapper filled with information about the local player object and client.
 
-                var localPlayer = CommandAliasPlusPlus.ClientState.LocalPlayer;
+                var localPlayer = PluginServices.ClientState.LocalPlayer;
                 if (localPlayer == null)
                 {
                     ImGui.TextUnformatted("Our local player is currently not loaded.");
@@ -125,8 +126,8 @@ public class ConfigWindow : Window, IDisposable
                 ImGui.TextUnformatted($"Our current job is ({localPlayer.ClassJob.RowId}) \"{localPlayer.ClassJob.Value.Abbreviation.ExtractText()}\"");
 
                 // Example for quarrying Lumina directly, getting the name of our current area.
-                var territoryId = CommandAliasPlusPlus.ClientState.TerritoryType;
-                if (CommandAliasPlusPlus.DataManager.GetExcelSheet<TerritoryType>().TryGetRow(territoryId, out var territoryRow))
+                var territoryId = PluginServices.ClientState.TerritoryType;
+                if (PluginServices.DataManager.GetExcelSheet<TerritoryType>().TryGetRow(territoryId, out var territoryRow))
                 {
                     ImGui.TextUnformatted($"We are currently in ({territoryId}) \"{territoryRow.PlaceName.Value.Name.ExtractText()}\"");
                 }
