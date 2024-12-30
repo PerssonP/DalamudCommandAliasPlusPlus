@@ -1,12 +1,13 @@
 {
-  "Author": "PeterP",
-  "Name": "CommandAlias++",
-  "Punchline": "A short one-liner that shows up in /xlplugins.",
-  "Description": "A description that shows up in /xlplugins. List any major slash-command(s).",
-  "ApplicableVersion": "any",
-  "Tags": [
-    "sample",
-    "plugin",
-    "goats"
-  ]
+    "Author": "PeterP",
+    "Name": "CommandAlias++",
+    "Punchline": "Make command aliases with support for custom logic",
+    "Description": "A plugin for making command aliases with support for custom logic",
+    "ApplicableVersion": "any",
+    "Tags": [
+        "alias",
+        "alises",
+        "command",
+        "commands"
+    ]
 }
