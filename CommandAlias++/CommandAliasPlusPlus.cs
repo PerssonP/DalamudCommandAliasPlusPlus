@@ -12,7 +12,7 @@ using FFXIVClientStructs.FFXIV.Component.Shell;
 using ImGuiNET;
 using System;
 using System.Collections.Generic;
-using System.IO;
+using System.Text.RegularExpressions;
 
 namespace CommandAliasPlusPlus;
 
@@ -36,11 +36,11 @@ public sealed unsafe class CommandAliasPlusPlus : IDalamudPlugin
     private const string CommandName = "/alias";
     private const string ConfigCommandName = "/aliasconfig";
 
-    private readonly Dictionary<string, string> _commandAliases = new()
+    private readonly Dictionary<string, string> _commandAliases = new(StringComparer.OrdinalIgnoreCase)
     {
-        { "clipboardgather", "/gather $cb" },
-        { "testinglists", "/echo $[one,two,three]" },
-        { "unsupported", "/echo $foo" }
+        { "/clipboardgather", "/gather {cb}" },
+        { "/testinglists", "/echo {[one,two\n,three]}" },
+        { "/unsupported", "/echo {foo}" }
     };
 
     private readonly Dictionary<string, int> _listsAndLastGrabbedIndex = [];
@@ -95,87 +95,60 @@ Regular aliases created with CommandAlias++ will not work in macros however this
         ToggleConfigUI();
     }
 
-    private void DetourExecuteCommandInner(ShellCommandModule* self, Utf8String* command, UIModule* uiModule)
+    private void DetourExecuteCommandInner(ShellCommandModule* self, Utf8String* message, UIModule* uiModule)
     {
-        PluginLog.Debug("Detour hit for ExecuteCommandInner");
+        PluginLog.Debug("Detour: Detour hit for ExecuteCommandInner");
         bool commandConsumed = false;
         try
         {
-            if (command->GetCharAt(0) != '/')
+            if (message->GetCharAt(0) != '/')
             {
-                PluginLog.Debug("Ending: First char not equal /");
+                PluginLog.Debug("Detour: Message was not a command. Ending.");
                 return;
             }
 
             //var aliases = Configuration.CommandAliases;
 
-            string originalCommand = command->ToString();
-            PluginLog.Debug("Original command: " + originalCommand);
+            string originalCommand = message->ToString();
+            PluginLog.Debug("Detour: Original command was {command}", originalCommand);
 
-            string[] originalCommandParts = originalCommand.Split(' ', 2);
-            if (originalCommandParts[0].Equals("/alias", StringComparison.OrdinalIgnoreCase))
+            if (originalCommand.StartsWith("/alias ", StringComparison.OrdinalIgnoreCase))
             {
-                // Command is alias-command. Set original command to be args of alias
-                PluginLog.Debug("Alias hit in detour");
-                originalCommand = originalCommandParts[^1];
-            }
-            else
-            {
-                // Remove leading forward slash
-                originalCommand = originalCommand[1..];
+                // Command is alias-command. Set command to be args of alias
+                PluginLog.Debug("Detour: Alias-command found. Extracting args and continuing parse.");
+                originalCommand = "/" + originalCommand[(originalCommand.IndexOf(' ') + 1)..];
             }
 
             string? canonicalCommand = _commandAliases.GetValueOrDefault(originalCommand);
             if (canonicalCommand == null)
             {
-                PluginLog.Debug("Ending: No alias found");
+                PluginLog.Debug("Detour: Command was not a registered alias. Ending.");
                 return;
             }
 
+            string translatedCommand = Regexes.Token()
+                .Replace(canonicalCommand, (match) => TranslateToken(match.Groups[1].Value));
+            PluginLog.Information("Detour: Alias was successfully matched and canonical command has been translated into {command}", translatedCommand);
 
-            string translatedCommand = TranslateCanonicalCommand(canonicalCommand);
-            Utf8String translatedCommandUtf8 = new(translatedCommand);
-            PluginLog.Debug("Executing translated command");
+            Utf8String translatedCommandUtf8String = new(translatedCommand);
+            PluginLog.Debug("Detour: Executing translated command.");
 
-            _executeCommandInnerHook!.Original(self, &translatedCommandUtf8, uiModule);
+            _executeCommandInnerHook!.Original(self, &translatedCommandUtf8String, uiModule);
             commandConsumed = true;
         }
         catch (Exception ex)
         {
-            PluginLog.Error(ex, "An error occured when handling a macro save event.");
+            PluginLog.Error(ex, "An error occured when detouring ExecuteCommandInner.");
         }
         finally
         {
-            // If the command was not consumed in prior code, execute it here unaltered
+            // If the command was not consumed in prior code, return it here unaltered
             if (!commandConsumed)
-                _executeCommandInnerHook!.Original(self, command, uiModule);
-        }
-    }
-
-    /// <summary>
-    /// Parse a canonical command for tokens and replace them with appropiate values.
-    /// </summary>
-    /// <param name="canonicalCommand">The canonical command to translate.</param>
-    /// <returns>A new string containing the translated command, ready to be executed.</returns>
-    private string TranslateCanonicalCommand(string canonicalCommand)
-    {
-        string[] canonicalCommandParts = canonicalCommand.Split(' ');
-        for (int i = 1; i < canonicalCommandParts.Length; i++)
-        {
-            string part = canonicalCommandParts[i];
-
-            PluginLog.Debug("Found part: " + part);
-            if (part[0] == '$')
             {
-                PluginLog.Debug("Found token: " + part);
-
-                string translatedToken = TranslateToken(part);
-
-                PluginLog.Debug("Translated token: " + translatedToken);
-                canonicalCommandParts[i] = translatedToken;
+                PluginLog.Debug("Detour: Message was not consumed by detour. Returning message to originl function.");
+                _executeCommandInnerHook!.Original(self, message, uiModule);
             }
         }
-        return string.Join(' ', canonicalCommandParts);
     }
 
     /// <summary>
@@ -183,12 +156,18 @@ Regular aliases created with CommandAlias++ will not work in macros however this
     /// </summary>
     /// <param name="input">The token to be translated.</param>
     /// <returns>The translated value.</returns>
-    private string TranslateToken(string input) => input switch
+    private string TranslateToken(string input)
     {
-        "$cb" => ImGui.GetClipboardText(),
-        ['$', '[', .. var list, ']'] => GetCurrentItemFromList(list),
-        _ => input
-    };
+        PluginLog.Debug("Detour: Token {token} found.", input);
+        string translated = input switch
+        {
+            "cb" => ImGui.GetClipboardText(),
+            ['[', .. var list, ']'] => GetCurrentItemFromList(list),
+            _ => input
+        };
+        PluginLog.Debug("Detour: Token has been translated to {translated}", translated);
+        return translated;
+    }
 
     /// <summary>
     /// Check the registered lists for the current item from a given list-key
@@ -236,4 +215,12 @@ Regular aliases created with CommandAlias++ will not work in macros however this
 
     private void DrawUI() => WindowSystem.Draw();
     public void ToggleConfigUI() => ConfigWindow.Toggle();
+
+}
+
+public static partial class Regexes
+{
+    [GeneratedRegex("{(.*)}", RegexOptions.Singleline)]
+    public static partial Regex Token();
+
 }
