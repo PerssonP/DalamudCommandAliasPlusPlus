@@ -16,8 +16,8 @@ public class Configuration : IPluginConfiguration
     public Dictionary<string, string> AliasedCommands { get; set; } = [];
 
     // the below exist just to make saving less cumbersome
-    public void Save()
+    /*public void Save()
     {
         PluginServices.PluginInterface.SavePluginConfig(this);
-    }
+    }*/
 }

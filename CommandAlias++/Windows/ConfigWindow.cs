@@ -1,11 +1,7 @@
-using System;
-using System.Numerics;
-using Dalamud.Interface.Utility.Raii;
-using Dalamud.Interface.Utility;
 using Dalamud.Interface.Windowing;
 using ImGuiNET;
-using Lumina.Excel.Sheets;
-using Dalamud.Plugin.Services;
+using System;
+using System.Numerics;
 
 namespace CommandAliasPlusPlus.Windows;
 
@@ -13,23 +9,16 @@ public class ConfigWindow : Window, IDisposable
 {
     private readonly Configuration _config;
 
-    public ConfigWindow(CommandAliasPlusPlus plugin) : base("CommandAlias++ Configuration")
+    public ConfigWindow(Configuration config) : base("CommandAlias++ Configuration")
     {
-        Flags = ImGuiWindowFlags.NoResize | ImGuiWindowFlags.NoCollapse | ImGuiWindowFlags.NoScrollbar |
-                ImGuiWindowFlags.NoScrollWithMouse;
-
-        Size = new Vector2(232, 180);
-        SizeCondition = ImGuiCond.Always;
-
-        /* Alternative:
-         SizeConstraints = new WindowSizeConstraints
+        _config = config;
+        Flags = ImGuiWindowFlags.NoScrollbar | ImGuiWindowFlags.NoScrollWithMouse;
+        
+        SizeConstraints = new WindowSizeConstraints
         {
             MinimumSize = new Vector2(375, 330),
             MaximumSize = new Vector2(float.MaxValue, float.MaxValue)
         };
-        */
-
-        _config = plugin.Configuration;
     }
 
     public void Dispose() { }
@@ -55,17 +44,18 @@ public class ConfigWindow : Window, IDisposable
         {
             _config.SomePropertyToBeSavedAndWithADefault = configValue;
             // can save immediately on change, if you don't want to provide a "Save and Close" button
-            _config.Save();
+            //_config.Save();
         }
 
         var movable = _config.IsConfigWindowMovable;
         if (ImGui.Checkbox("Movable Config Window", ref movable))
         {
             _config.IsConfigWindowMovable = movable;
-            _config.Save();
+            //_config.Save();
         }
     }
 
+    /*
     public void MainWindowDrawUnused()
     {
         // Do not use .Text() or any other formatted function like TextWrapped(), or SetTooltip().
@@ -137,5 +127,5 @@ public class ConfigWindow : Window, IDisposable
                 }
             }
         }
-    }
+    }*/
 }

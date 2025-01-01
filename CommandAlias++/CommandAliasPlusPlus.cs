@@ -9,19 +9,25 @@ using FFXIVClientStructs.FFXIV.Client.UI;
 using FFXIVClientStructs.FFXIV.Client.UI.Shell;
 using FFXIVClientStructs.FFXIV.Component.Shell;
 using ImGuiNET;
+using Microsoft.Extensions.Hosting;
 using System;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace CommandAliasPlusPlus;
 
-public sealed unsafe class CommandAliasPlusPlus : IDalamudPlugin
+public sealed unsafe class CommandAliasPlusPlus : IHostedService
 {
     private const string CommandName = "/alias";
     private const string ConfigCommandName = "/aliasconfig";
 
     private readonly IPluginLog _logger;
-    private readonly Hook<ShellCommandModule.Delegates.ExecuteCommandInner>? _executeCommandInnerHook;
+    private readonly IDalamudPluginInterface _pluginInterface;
+    private readonly ICommandManager _commandManager;
+
+    private readonly Hook<ShellCommandModule.Delegates.ExecuteCommandInner> _executeCommandInnerHook;
     private readonly Dictionary<string, int> _listsAndLastGrabbedIndex = [];
 
     private readonly Dictionary<string, string> _commandAliases = new(StringComparer.OrdinalIgnoreCase)
@@ -31,41 +37,66 @@ public sealed unsafe class CommandAliasPlusPlus : IDalamudPlugin
         { "/unsupported", "/echo {foo}" }
     };
 
-    public Configuration Configuration { get; init; }
+    private readonly Configuration _config;
 
-    public readonly WindowSystem WindowSystem = new("SamplePlugin");
-    private ConfigWindow ConfigWindow { get; init; }
+    public readonly WindowSystem WindowSystem = new("CommandAlias++");
+    private readonly ConfigWindow _configWindow;
 
-    public CommandAliasPlusPlus(IDalamudPluginInterface pluginInterface)
+    public CommandAliasPlusPlus(
+        IPluginLog logger,
+        IDalamudPluginInterface pluginInterface,
+        ICommandManager commandManager,
+        IGameInteropProvider gameInteropProvider,
+        ConfigWindow configWindow,
+        Configuration config)
     {
-        pluginInterface.Create<PluginServices>();
-        _logger = PluginServices.PluginLog;
+        _logger = logger;
+        _config = config;
+        _commandManager = commandManager;
+        _configWindow = configWindow;
+        _pluginInterface = pluginInterface;
 
-        Configuration = PluginServices.PluginInterface.GetPluginConfig() as Configuration ?? new Configuration();
+        _executeCommandInnerHook = gameInteropProvider.HookFromAddress<ShellCommandModule.Delegates.ExecuteCommandInner>(
+            ShellCommandModule.MemberFunctionPointers.ExecuteCommandInner,
+            DetourExecuteCommandInner
+        );
+    }
 
-        ConfigWindow = new ConfigWindow(this);
-        WindowSystem.AddWindow(ConfigWindow);
+    public Task StartAsync(CancellationToken cancellationToken)
+    {
+        WindowSystem.AddWindow(_configWindow);
 
-        PluginServices.PluginInterface.UiBuilder.Draw += DrawUI;
-        PluginServices.PluginInterface.UiBuilder.OpenConfigUi += ToggleConfigUI;
+        _pluginInterface.UiBuilder.Draw += DrawUI;
+        _pluginInterface.UiBuilder.OpenConfigUi += ToggleConfigUI;
 
-        PluginServices.CommandManager.AddHandler(CommandName, new CommandInfo(OnAliasCommand)
+        _commandManager.AddHandler(CommandName, new CommandInfo(OnAliasCommand)
         {
             HelpMessage = @"Alternate method of calling an alias.
 Call this command with the name of the alias you want to execute.
 Aliases created with CommandAlias++ cannot be used in macros however the /alias command can."
         });
 
-        PluginServices.CommandManager.AddHandler(ConfigCommandName, new CommandInfo(OnConfigCommand)
+        _commandManager.AddHandler(ConfigCommandName, new CommandInfo(OnConfigCommand)
         {
             HelpMessage = "Toggle the configuration window for CommandAlias++"
         });
 
-        _executeCommandInnerHook = PluginServices.GameInteropProvider.HookFromAddress<ShellCommandModule.Delegates.ExecuteCommandInner>(
-            ShellCommandModule.MemberFunctionPointers.ExecuteCommandInner,
-            DetourExecuteCommandInner
-        );
+        
         _executeCommandInnerHook.Enable();
+        return Task.CompletedTask;
+    }
+
+    public Task StopAsync(CancellationToken cancellationToken)
+    {
+        _executeCommandInnerHook?.Dispose();
+        _commandManager.RemoveHandler(CommandName);
+        _commandManager.RemoveHandler(ConfigCommandName);
+
+        WindowSystem.RemoveAllWindows();
+
+        _configWindow.Dispose();
+
+        return Task.CompletedTask;
     }
 
     private void OnAliasCommand(string command, string alias)
@@ -191,20 +222,8 @@ Aliases created with CommandAlias++ cannot be used in macros however the /alias 
         return list.Split(',', 2)[0];
     }
 
-    public void Dispose()
-    {
-        _executeCommandInnerHook?.Dispose();
-        PluginServices.CommandManager.RemoveHandler(CommandName);
-        PluginServices.CommandManager.RemoveHandler(ConfigCommandName);
-
-        WindowSystem.RemoveAllWindows();
-
-        ConfigWindow.Dispose();
-    }
-
     private void DrawUI() => WindowSystem.Draw();
-    public void ToggleConfigUI() => ConfigWindow.Toggle();
-
+    public void ToggleConfigUI() => _configWindow.Toggle();
 }
 
 public static partial class Regexes
