@@ -1,3 +1,4 @@
+using CommandAliasPlusPlus.Services;
 using CommandAliasPlusPlus.Windows;
 using Dalamud.Game.Command;
 using Dalamud.Hooking;
@@ -18,11 +19,8 @@ using System.Threading.Tasks;
 
 namespace CommandAliasPlusPlus;
 
-public sealed unsafe class CommandAliasPlusPlus : IHostedService
+internal sealed unsafe class CommandAliasPlusPlus : IHostedService
 {
-    private const string CommandName = "/alias";
-    private const string ConfigCommandName = "/aliasconfig";
-
     private readonly IPluginLog _logger;
     private readonly IDalamudPluginInterface _pluginInterface;
     private readonly ICommandManager _commandManager;
@@ -39,22 +37,27 @@ public sealed unsafe class CommandAliasPlusPlus : IHostedService
 
     private readonly Configuration _config;
 
-    public readonly WindowSystem WindowSystem = new("CommandAlias++");
-    private readonly ConfigWindow _configWindow;
+    private readonly CommandService _commandService;
+    private readonly WindowService _windowService;
 
     public CommandAliasPlusPlus(
         IPluginLog logger,
         IDalamudPluginInterface pluginInterface,
         ICommandManager commandManager,
         IGameInteropProvider gameInteropProvider,
-        ConfigWindow configWindow,
+        CommandService commandService,
+        WindowService windowService,
         Configuration config)
     {
         _logger = logger;
         _config = config;
         _commandManager = commandManager;
-        _configWindow = configWindow;
+        _commandService = commandService;
+        _windowService = windowService;
         _pluginInterface = pluginInterface;
+
+        _pluginInterface.UiBuilder.Draw += windowService.DrawUI;
+        _pluginInterface.UiBuilder.OpenConfigUi += windowService.ToggleConfigUI;
 
         _executeCommandInnerHook = gameInteropProvider.HookFromAddress<ShellCommandModule.Delegates.ExecuteCommandInner>(
             ShellCommandModule.MemberFunctionPointers.ExecuteCommandInner,
@@ -64,53 +67,20 @@ public sealed unsafe class CommandAliasPlusPlus : IHostedService
 
     public Task StartAsync(CancellationToken cancellationToken)
     {
-        WindowSystem.AddWindow(_configWindow);
-
-        _pluginInterface.UiBuilder.Draw += DrawUI;
-        _pluginInterface.UiBuilder.OpenConfigUi += ToggleConfigUI;
-
-        _commandManager.AddHandler(CommandName, new CommandInfo(OnAliasCommand)
-        {
-            HelpMessage = @"Alternate method of calling an alias.
-Call this command with the name of the alias you want to execute.
-Aliases created with CommandAlias++ cannot be used in macros however the /alias command can."
-        });
-
-        _commandManager.AddHandler(ConfigCommandName, new CommandInfo(OnConfigCommand)
-        {
-            HelpMessage = "Toggle the configuration window for CommandAlias++"
-        });
-
-        
+        _commandManager.AddHandler(CommandService.AliasCommandName, _commandService.AliasCommandInfo);
+        _commandManager.AddHandler(CommandService.ConfigCommandName, _commandService.ConfigCommandInfo);
         _executeCommandInnerHook.Enable();
+
         return Task.CompletedTask;
     }
 
     public Task StopAsync(CancellationToken cancellationToken)
     {
+        _commandManager.RemoveHandler(CommandService.AliasCommandName);
+        _commandManager.RemoveHandler(CommandService.ConfigCommandName);
         _executeCommandInnerHook?.Dispose();
-        _commandManager.RemoveHandler(CommandName);
-        _commandManager.RemoveHandler(ConfigCommandName);
-
-        WindowSystem.RemoveAllWindows();
-
-        _configWindow.Dispose();
 
         return Task.CompletedTask;
-    }
-
-    private void OnAliasCommand(string command, string alias)
-    {
-        // Will be executed if /alias is run in a macro
-        // Execute command using ExecuteCommandInner to trigger detour
-        _logger.Debug("Alias triggered: {alias}", alias);
-        Utf8String utf8String = new($"{command} {alias}");
-        RaptureShellModule.Instance()->ExecuteCommandInner(&utf8String, UIModule.Instance());
-    }
-
-    private void OnConfigCommand(string command, string _)
-    {
-        ToggleConfigUI();
     }
 
     private void DetourExecuteCommandInner(ShellCommandModule* self, Utf8String* message, UIModule* uiModule)
@@ -221,9 +191,6 @@ Aliases created with CommandAlias++ cannot be used in macros however the /alias 
         _listsAndLastGrabbedIndex.Add(list, 0);
         return list.Split(',', 2)[0];
     }
-
-    private void DrawUI() => WindowSystem.Draw();
-    public void ToggleConfigUI() => _configWindow.Toggle();
 }
 
 public static partial class Regexes

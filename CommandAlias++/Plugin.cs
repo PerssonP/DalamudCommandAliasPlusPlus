@@ -1,4 +1,5 @@
 
+using CommandAliasPlusPlus.Services;
 using CommandAliasPlusPlus.Windows;
 using Dalamud.Plugin;
 using Dalamud.Plugin.Services;
@@ -38,6 +39,8 @@ public class Plugin : IDalamudPlugin
                     .AddSingleton(gameInteropProvider)
                     // Plugin
                     .AddSingleton<ConfigWindow>()
+                    .AddSingleton<WindowService>()
+                    .AddSingleton<CommandService>()
                     .AddHostedService<CommandAliasPlusPlus>();
             })
             .Build();
