@@ -1,4 +1,5 @@
 using Dalamud.Interface.Windowing;
+using Dalamud.Plugin;
 using ImGuiNET;
 using System;
 using System.Numerics;
@@ -7,10 +8,14 @@ namespace CommandAliasPlusPlus.Windows;
 
 public class ConfigWindow : Window, IDisposable
 {
+    private readonly IDalamudPluginInterface _pluginInterface;
+
     private readonly Configuration _config;
 
-    public ConfigWindow(Configuration config) : base("CommandAlias++ Configuration")
+    public ConfigWindow(IDalamudPluginInterface pluginInterface, Configuration config)
+        : base("CommandAlias++ Configuration")
     {
+        _pluginInterface = pluginInterface;
         _config = config;
         Flags = ImGuiWindowFlags.NoScrollbar | ImGuiWindowFlags.NoScrollWithMouse;
         
@@ -45,6 +50,7 @@ public class ConfigWindow : Window, IDisposable
             _config.SomePropertyToBeSavedAndWithADefault = configValue;
             // can save immediately on change, if you don't want to provide a "Save and Close" button
             //_config.Save();
+            _pluginInterface.SavePluginConfig(_config);
         }
 
         var movable = _config.IsConfigWindowMovable;
@@ -52,6 +58,7 @@ public class ConfigWindow : Window, IDisposable
         {
             _config.IsConfigWindowMovable = movable;
             //_config.Save();
+            _pluginInterface.SavePluginConfig(_config);
         }
     }
 

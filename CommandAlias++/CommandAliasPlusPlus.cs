@@ -1,13 +1,9 @@
 using CommandAliasPlusPlus.Services;
-using CommandAliasPlusPlus.Windows;
-using Dalamud.Game.Command;
 using Dalamud.Hooking;
-using Dalamud.Interface.Windowing;
 using Dalamud.Plugin;
 using Dalamud.Plugin.Services;
 using FFXIVClientStructs.FFXIV.Client.System.String;
 using FFXIVClientStructs.FFXIV.Client.UI;
-using FFXIVClientStructs.FFXIV.Client.UI.Shell;
 using FFXIVClientStructs.FFXIV.Component.Shell;
 using ImGuiNET;
 using Microsoft.Extensions.Hosting;
@@ -27,13 +23,6 @@ internal sealed unsafe class CommandAliasPlusPlus : IHostedService
 
     private readonly Hook<ShellCommandModule.Delegates.ExecuteCommandInner> _executeCommandInnerHook;
     private readonly Dictionary<string, int> _listsAndLastGrabbedIndex = [];
-
-    private readonly Dictionary<string, string> _commandAliases = new(StringComparer.OrdinalIgnoreCase)
-    {
-        { "/clipboardgather", "/gather {cb}" },
-        { "/testinglists", "/echo {[one,two,three]}" },
-        { "/unsupported", "/echo {foo}" }
-    };
 
     private readonly Configuration _config;
 
@@ -95,8 +84,6 @@ internal sealed unsafe class CommandAliasPlusPlus : IHostedService
                 return;
             }
 
-            //var aliases = Configuration.CommandAliases;
-
             string originalCommand = message->ToString();
             _logger.Debug("Detour: Original command was {command}", originalCommand);
 
@@ -107,7 +94,7 @@ internal sealed unsafe class CommandAliasPlusPlus : IHostedService
                 originalCommand = "/" + originalCommand[(originalCommand.IndexOf(' ') + 1)..];
             }
 
-            string? canonicalCommand = _commandAliases.GetValueOrDefault(originalCommand);
+            string? canonicalCommand = _config.AliasedCommands.GetValueOrDefault(originalCommand);
             if (canonicalCommand == null)
             {
                 _logger.Debug("Detour: Command was not a registered alias. Ending.");

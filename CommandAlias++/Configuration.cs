@@ -1,5 +1,4 @@
 using Dalamud.Configuration;
-using Dalamud.Plugin;
 using System;
 using System.Collections.Generic;
 
@@ -12,12 +11,6 @@ public class Configuration : IPluginConfiguration
 
     public bool IsConfigWindowMovable { get; set; } = true;
     public bool SomePropertyToBeSavedAndWithADefault { get; set; } = true;
-
-    public Dictionary<string, string> AliasedCommands { get; set; } = [];
-
-    // the below exist just to make saving less cumbersome
-    /*public void Save()
-    {
-        PluginServices.PluginInterface.SavePluginConfig(this);
-    }*/
+    public Dictionary<string, string> AliasedCommands { get; set; }
+        = new() { { "/clipboardgather", "/gather {cb}" }, { "/testinglists", "/echo {[one,two,three]}" }, { "/unsupported", "/echo {foo}" } };
 }
