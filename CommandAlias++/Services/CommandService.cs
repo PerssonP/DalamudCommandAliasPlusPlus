@@ -19,20 +19,19 @@ Call this command with the name of the alias you want to execute.
 Aliases created with CommandAlias++ cannot be used in macros however the /alias command can."
         };
 
-    private void HandleAliasCommand(string command, string alias)
-    {
-        // Will be executed if /alias is run in a macro
-        // Execute command using ExecuteCommandInner to trigger detour
-        logger.Debug("Alias triggered: {alias}", alias);
-        Utf8String utf8String = new($"{command} {alias}");
-        RaptureShellModule.Instance()->ExecuteCommandInner(&utf8String, UIModule.Instance());
-    }
-
     public CommandInfo ConfigCommandInfo =>
         new(HandleConfigCommand)
         {
             HelpMessage = "Toggle the configuration window for CommandAlias++"
         };
+
+    private void HandleAliasCommand(string command, string alias)
+    {
+        // Extract alias and execute using ExecuteCommandInner to trigger detour
+        logger.Debug("Alias triggered: {alias}", alias);
+        Utf8String utf8String = new($"/{alias}");
+        RaptureShellModule.Instance()->ExecuteCommandInner(&utf8String, UIModule.Instance());
+    }
 
     private void HandleConfigCommand(string command, string alias)
         => windowService.ToggleConfigUI();
