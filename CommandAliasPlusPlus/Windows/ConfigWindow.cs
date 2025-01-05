@@ -1,3 +1,4 @@
+using CommandAliasPlusPlus.Services;
 using Dalamud.Interface.Windowing;
 using Dalamud.Plugin;
 using ImGuiNET;
@@ -6,17 +7,14 @@ using System.Numerics;
 
 namespace CommandAliasPlusPlus.Windows;
 
-public class ConfigWindow : Window, IDisposable
+internal class ConfigWindow : Window
 {
-    private readonly IDalamudPluginInterface _pluginInterface;
+    private readonly ConfigurationService _configService;
 
-    private readonly Configuration _config;
-
-    public ConfigWindow(IDalamudPluginInterface pluginInterface, Configuration config)
+    public ConfigWindow(ConfigurationService configService)
         : base("CommandAlias++ Configuration")
     {
-        _pluginInterface = pluginInterface;
-        _config = config;
+        _configService = configService;
         Flags = ImGuiWindowFlags.NoScrollbar | ImGuiWindowFlags.NoScrollWithMouse;
         
         SizeConstraints = new WindowSizeConstraints
@@ -26,12 +24,10 @@ public class ConfigWindow : Window, IDisposable
         };
     }
 
-    public void Dispose() { }
-
     public override void PreDraw()
     {
         // Flags must be added or removed before Draw() is being called, or they won't apply
-        if (_config.IsConfigWindowMovable)
+        if (_configService.Config.IsConfigWindowMovable)
         {
             Flags &= ~ImGuiWindowFlags.NoMove;
         }
@@ -44,21 +40,18 @@ public class ConfigWindow : Window, IDisposable
     public override void Draw()
     {
         // can't ref a property, so use a local copy
-        var configValue = _config.SomePropertyToBeSavedAndWithADefault;
+        var configValue = _configService.Config.SomePropertyToBeSavedAndWithADefault;
         if (ImGui.Checkbox("Random Config Bool", ref configValue))
         {
-            _config.SomePropertyToBeSavedAndWithADefault = configValue;
-            // can save immediately on change, if you don't want to provide a "Save and Close" button
-            //_config.Save();
-            _pluginInterface.SavePluginConfig(_config);
+            _configService.Config.SomePropertyToBeSavedAndWithADefault = configValue;
+            _configService.Save();
         }
 
-        var movable = _config.IsConfigWindowMovable;
+        var movable = _configService.Config.IsConfigWindowMovable;
         if (ImGui.Checkbox("Movable Config Window", ref movable))
         {
-            _config.IsConfigWindowMovable = movable;
-            //_config.Save();
-            _pluginInterface.SavePluginConfig(_config);
+            _configService.Config.IsConfigWindowMovable = movable;
+            _configService.Save();
         }
     }
 

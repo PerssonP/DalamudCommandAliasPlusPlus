@@ -29,7 +29,6 @@ public class Plugin : IDalamudPlugin
             .ConfigureServices(services =>
             {
                 services
-                    .AddSingleton(pluginInterface.GetPluginConfig() as Configuration ?? new Configuration())
                     // Dalamud services
                     .AddSingleton(pluginInterface)
                     .AddSingleton(pluginLog)
@@ -38,10 +37,11 @@ public class Plugin : IDalamudPlugin
                     .AddSingleton(dataManager)
                     .AddSingleton(gameInteropProvider)
                     // Plugin
-                    .AddSingleton<ConfigWindow>()
+                    .AddHostedService<CommandAliasPlusPlus>()
+                    .AddSingleton<ConfigurationService>()
                     .AddSingleton<WindowService>()
                     .AddSingleton<CommandService>()
-                    .AddHostedService<CommandAliasPlusPlus>();
+                    .AddSingleton<ConfigWindow>();
             })
             .Build();
 

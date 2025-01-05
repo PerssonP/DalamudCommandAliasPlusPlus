@@ -69,6 +69,8 @@ internal sealed unsafe class CommandAliasPlusPlus : IHostedService
         _commandManager.RemoveHandler(CommandService.ConfigCommandName);
         _executeCommandInnerHook?.Dispose();
 
+        _windowService.Dispose();
+
         return Task.CompletedTask;
     }
 
