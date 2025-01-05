@@ -21,29 +21,29 @@ internal sealed unsafe class CommandAliasPlusPlus : IHostedService
     private readonly IDalamudPluginInterface _pluginInterface;
     private readonly ICommandManager _commandManager;
 
-    private readonly Hook<ShellCommandModule.Delegates.ExecuteCommandInner> _executeCommandInnerHook;
-    private readonly Dictionary<string, int> _listsAndLastGrabbedIndex = [];
-
     private readonly Configuration _config;
-
     private readonly CommandService _commandService;
     private readonly WindowService _windowService;
+
+    private readonly Hook<ShellCommandModule.Delegates.ExecuteCommandInner> _executeCommandInnerHook;
+    private readonly Dictionary<string, int> _listsAndLastGrabbedIndex = [];
 
     public CommandAliasPlusPlus(
         IPluginLog logger,
         IDalamudPluginInterface pluginInterface,
         ICommandManager commandManager,
         IGameInteropProvider gameInteropProvider,
+        ConfigurationService configService,
         CommandService commandService,
-        WindowService windowService,
-        Configuration config)
+        WindowService windowService)
     {
         _logger = logger;
-        _config = config;
+        _pluginInterface = pluginInterface;
         _commandManager = commandManager;
+
+        _config = configService.Config;
         _commandService = commandService;
         _windowService = windowService;
-        _pluginInterface = pluginInterface;
 
         _pluginInterface.UiBuilder.Draw += windowService.DrawUI;
         _pluginInterface.UiBuilder.OpenConfigUi += windowService.ToggleConfigUI;
