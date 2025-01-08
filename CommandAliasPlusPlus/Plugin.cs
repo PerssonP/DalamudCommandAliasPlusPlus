@@ -9,7 +9,7 @@ using Microsoft.Extensions.Hosting;
 namespace CommandAliasPlusPlus;
 
 /// <summary>
-/// Bootstrap class for CommandAlias++.
+/// Bootstrap class for CommandAliasPlusPlus.
 /// </summary>
 public class Plugin : IDalamudPlugin
 {
@@ -23,7 +23,6 @@ public class Plugin : IDalamudPlugin
         IDataManager dataManager,
         IGameInteropProvider gameInteropProvider)
     {
-
         _host = new HostBuilder()
             .UseContentRoot(pluginInterface.ConfigDirectory.FullName)
             .ConfigureServices(services =>

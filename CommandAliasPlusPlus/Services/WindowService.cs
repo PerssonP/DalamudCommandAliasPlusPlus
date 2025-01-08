@@ -4,6 +4,9 @@ using System;
 
 namespace CommandAliasPlusPlus.Services;
 
+/// <summary>
+/// Service to handle windows and WindowSystem.
+/// </summary>
 internal class WindowService : IDisposable
 {
     private readonly WindowSystem _windowSystem = new("CommandAlias++");

@@ -1,7 +1,7 @@
 {
     "Author": "PeterP",
     "Name": "CommandAlias++",
-    "Punchline": "Make command aliases with support for custom logic",
+    "Punchline": "It aliases commands, and a bit more!",
     "Description": "A plugin for making command aliases with support for custom logic",
     "ApplicableVersion": "any",
     "Tags": [

@@ -16,6 +16,9 @@ using System.Threading.Tasks;
 
 namespace CommandAliasPlusPlus;
 
+/// <summary>
+/// Main plugin class. Starts the plugin, keeps track of resources and handles disposal.
+/// </summary>
 internal sealed unsafe class CommandAliasPlusPlus : IHostedService
 {
     private readonly IPluginLog _logger;
@@ -63,7 +66,7 @@ internal sealed unsafe class CommandAliasPlusPlus : IHostedService
 
         _config.AliasCheckValid();
 
-        foreach (AliasCommand aliasCommand in _config.AliasedCommands)
+        foreach (AliasCommand aliasCommand in _config.AliasCommands)
             _logger.Debug(aliasCommand.ToString());
 
         return Task.CompletedTask;
@@ -80,6 +83,9 @@ internal sealed unsafe class CommandAliasPlusPlus : IHostedService
         return Task.CompletedTask;
     }
 
+    /// <summary>
+    /// Detour for ExecuteCommandInner. If message is not consumed by the detour it will be returned to the original function.
+    /// </summary>
     private void DetourExecuteCommandInner(ShellCommandModule* self, Utf8String* message, UIModule* uiModule)
     {
         _logger.Debug("Detour: Detour hit for ExecuteCommandInner");
@@ -102,7 +108,7 @@ internal sealed unsafe class CommandAliasPlusPlus : IHostedService
                 originalCommand = "/" + originalCommand[(originalCommand.IndexOf(' ') + 1)..];
             }
 
-            string? canonicalCommand = _config.AliasedCommands.FirstOrDefault(command => command.Alias.Equals(originalCommand, StringComparison.OrdinalIgnoreCase))?.Canonical;
+            string? canonicalCommand = _config.AliasCommands.FirstOrDefault(command => command.Alias.Equals(originalCommand, StringComparison.OrdinalIgnoreCase))?.Canonical;
             if (canonicalCommand == null)
             {
                 _logger.Debug("Detour: Command was not a registered alias. Ending.");

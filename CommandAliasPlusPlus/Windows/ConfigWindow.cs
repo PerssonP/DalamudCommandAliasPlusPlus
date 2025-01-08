@@ -1,11 +1,13 @@
 using CommandAliasPlusPlus.Services;
 using Dalamud.Interface.Windowing;
 using ImGuiNET;
-using System.Collections.Generic;
 using System.Numerics;
 
 namespace CommandAliasPlusPlus.Windows;
 
+/// <summary>
+/// Window to allow the user to alter Configuration.AliasCommands.
+/// </summary>
 internal class ConfigWindow : Window
 {
     private readonly ConfigurationService _configService;
@@ -24,19 +26,6 @@ internal class ConfigWindow : Window
         };
     }
 
-    public override void PreDraw()
-    {
-        // Flags must be added or removed before Draw() is being called, or they won't apply
-        if (_configService.Config.IsConfigWindowMovable)
-        {
-            Flags &= ~ImGuiWindowFlags.NoMove;
-        }
-        else
-        {
-            Flags |= ImGuiWindowFlags.NoMove;
-        }
-    }
-
     public override void Draw()
     {
         bool changed = false;
@@ -48,7 +37,7 @@ internal class ConfigWindow : Window
         ImGui.NextColumn();
         ImGui.Separator();
 
-        foreach (AliasCommand command in _configService.Config.AliasedCommands)
+        foreach (AliasCommand command in _configService.Config.AliasCommands)
         {
             string alias = command.Alias;
             string canon = command.Canonical;
@@ -70,7 +59,7 @@ internal class ConfigWindow : Window
         ImGui.Columns(1);
         if (ImGui.Button("New"))
         {
-            _configService.Config.AliasedCommands.Add(new AliasCommand());
+            _configService.Config.AliasCommands.Add(new AliasCommand());
             changed = true;
         }
 

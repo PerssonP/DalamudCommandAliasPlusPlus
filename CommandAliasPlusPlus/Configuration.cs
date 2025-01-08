@@ -5,17 +5,26 @@ using System.Collections.Generic;
 
 namespace CommandAliasPlusPlus;
 
+/// <summary>
+/// Configuration class for CommandAliasPlusPlus.
+/// </summary>
 public class Configuration : IPluginConfiguration
 {
     public int Version { get; set; } = 0;
 
-    public bool IsConfigWindowMovable { get; set; } = true;
-    public bool SomePropertyToBeSavedAndWithADefault { get; set; } = true;
-    public List<AliasCommand> AliasedCommands { get; set; } = [];
+    public List<AliasCommand> AliasCommands { get; set; } = [];
+    /// <summary>
+    /// Run validity checks for all aliases.
+    /// </summary>
     public void AliasCheckValid()
-        => AliasedCommands.ForEach(alias => alias.CheckValid());
+        => AliasCommands.ForEach(alias => alias.CheckValid());
 }
 
+/// <summary>
+/// A class containing an alias command. Contains the alias and the canonical command.<br />
+/// Each AliasCommand has a unique ID which is used to keep track of the object (e.g. in ConfigWindow).<br />
+/// Each AliasCommand also has a flag to indicate if the command is valid. This flag is not written to disk. Use <see cref="CheckValid"/> to calculate the flag.
+/// </summary>
 public record class AliasCommand
 {
     public Guid Id { get; init; } = Guid.NewGuid();
