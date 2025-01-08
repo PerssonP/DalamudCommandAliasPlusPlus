@@ -9,6 +9,7 @@ using ImGuiNET;
 using Microsoft.Extensions.Hosting;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
@@ -96,7 +97,7 @@ internal sealed unsafe class CommandAliasPlusPlus : IHostedService
                 originalCommand = "/" + originalCommand[(originalCommand.IndexOf(' ') + 1)..];
             }
 
-            string? canonicalCommand = _config.AliasedCommands.GetValueOrDefault(originalCommand);
+            string? canonicalCommand = _config.AliasedCommands.FirstOrDefault(command => command.Alias.Equals(originalCommand, StringComparison.OrdinalIgnoreCase))?.Canonical;
             if (canonicalCommand == null)
             {
                 _logger.Debug("Detour: Command was not a registered alias. Ending.");

@@ -11,6 +11,12 @@ public class Configuration : IPluginConfiguration
 
     public bool IsConfigWindowMovable { get; set; } = true;
     public bool SomePropertyToBeSavedAndWithADefault { get; set; } = true;
-    public Dictionary<string, string> AliasedCommands { get; set; }
-        = new() { { "/clipboardgather", "/gather {cb}" }, { "/testinglists", "/echo {[one,two,three]}" }, { "/unsupported", "/echo {foo}" } };
+    public List<AliasCommand> AliasedCommands { get; set; } = [];
+}
+
+public class AliasCommand
+{
+    public Guid Id { get; init; } = Guid.NewGuid();
+    public string Alias { get; set; } = "";
+    public string Canonical { get; set; } = "";
 }
