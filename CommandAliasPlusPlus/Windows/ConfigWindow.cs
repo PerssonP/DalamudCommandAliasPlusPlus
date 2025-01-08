@@ -39,6 +39,8 @@ internal class ConfigWindow : Window
 
     public override void Draw()
     {
+        bool changed = false;
+
         ImGui.Columns(2);
         ImGui.TextUnformatted("Alias command");
         ImGui.NextColumn();
@@ -46,8 +48,6 @@ internal class ConfigWindow : Window
         ImGui.NextColumn();
         ImGui.Separator();
 
-        List<AliasCommand> aliases2 = _configService.Config.AliasedCommands;
-        bool changed = false;
         foreach (AliasCommand command in _configService.Config.AliasedCommands)
         {
             string alias = command.Alias;
@@ -65,6 +65,13 @@ internal class ConfigWindow : Window
             }
             ImGui.NextColumn();
             ImGui.Separator();
+        }
+
+        ImGui.Columns(1);
+        if (ImGui.Button("New"))
+        {
+            _configService.Config.AliasedCommands.Add(new AliasCommand());
+            changed = true;
         }
 
         if (changed)

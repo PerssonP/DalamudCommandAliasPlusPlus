@@ -61,6 +61,11 @@ internal sealed unsafe class CommandAliasPlusPlus : IHostedService
         _commandManager.AddHandler(CommandService.ConfigCommandName, _commandService.ConfigCommandInfo);
         _executeCommandInnerHook.Enable();
 
+        _config.AliasCheckValid();
+
+        foreach (AliasCommand aliasCommand in _config.AliasedCommands)
+            _logger.Debug(aliasCommand.ToString());
+
         return Task.CompletedTask;
     }
 
@@ -148,9 +153,9 @@ internal sealed unsafe class CommandAliasPlusPlus : IHostedService
     }
 
     /// <summary>
-    /// Check the registered lists for the current item from a given list-key
-    /// If this is the first time the list-key is encountered, the list will be registered and the first item will be returned.
-    /// If the list-key has been encountered before, the index will increment and the current item will be returned.
+    /// Check the registered lists for the current item from a given list-key.<br />
+    /// If this is the first time the list-key is encountered, the list will be registered and the first item will be returned.<br />
+    /// If the list-key has been encountered before, the index will increment and the current item will be returned.<br />
     /// If the index exceeds the length of the list the index will be reset and the first value will be returned.
     /// </summary>
     /// <param name="list">The list-key to check.</param>
