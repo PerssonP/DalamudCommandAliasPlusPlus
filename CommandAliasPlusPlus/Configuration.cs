@@ -32,6 +32,8 @@ public record class AliasCommand
     public string Canonical { get; set; } = "";
 
     [JsonIgnore]
+    public bool Delete { get; set; } = false;
+    [JsonIgnore]
     public bool Valid { get; set; } = false;
     /// <summary>
     /// Check if AliasCommand is valid. Sets AliasCommand.Valid to true or false.

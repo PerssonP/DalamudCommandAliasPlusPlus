@@ -30,10 +30,11 @@ internal class ConfigWindow : Window
     {
         bool changed = false;
 
-        ImGui.Columns(2);
+        ImGui.Columns(3);
         ImGui.TextUnformatted("Alias command");
         ImGui.NextColumn();
         ImGui.TextUnformatted("Canonical command");
+        ImGui.NextColumn();
         ImGui.NextColumn();
         ImGui.Separator();
 
@@ -41,15 +42,24 @@ internal class ConfigWindow : Window
         {
             string alias = command.Alias;
             string canon = command.Canonical;
+            ImGui.SetNextItemWidth(-5);
             if (ImGui.InputText($"###alias{command.Id}", ref alias, 500))
             {
                 command.Alias = alias;
                 changed = true;
             }
             ImGui.NextColumn();
+            ImGui.SetNextItemWidth(-5);
             if (ImGui.InputText($"###canon{command.Id}", ref canon, 500))
             {
                 command.Canonical = canon;
+                changed = true;
+            }
+            ImGui.NextColumn();
+
+            if (ImGui.Button($"-###delete{command.Id}"))
+            {
+                command.Delete = true;
                 changed = true;
             }
             ImGui.NextColumn();
@@ -57,13 +67,19 @@ internal class ConfigWindow : Window
         }
 
         ImGui.Columns(1);
-        if (ImGui.Button("New"))
+        if (ImGui.Button("Add new row"))
         {
             _configService.Config.AliasCommands.Add(new AliasCommand());
             changed = true;
         }
 
         if (changed)
+        {
+            int deletionIndex = _configService.Config.AliasCommands.FindIndex(c => c.Delete);
+            if (deletionIndex != -1)
+                _configService.Config.AliasCommands.RemoveAt(deletionIndex);
+
             _configService.Save();
+        }
     }
 }
