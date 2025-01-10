@@ -104,20 +104,23 @@ internal sealed unsafe class CommandAliasPlusPlus : IHostedService
                 return;
             }
 
-            string originalCommand = message->ToString();
-            _logger.Debug("Detour: Original command was {command}", originalCommand);
+            string messageString = message->ToString();
+            _logger.Debug("Detour: Original command was {command}", messageString);
 
-            if (originalCommand.StartsWith("/alias ", StringComparison.OrdinalIgnoreCase))
+            if (messageString.StartsWith("/alias ", StringComparison.OrdinalIgnoreCase))
             {
                 // Command is alias-command. Set command to be args of alias
                 _logger.Debug("Detour: Alias-command found. Extracting args and continuing parse.");
-                originalCommand = originalCommand[(originalCommand.IndexOf(' ') + 1)..];
+                messageString = messageString[(messageString.IndexOf(' ') + 1)..];
             }
             else
             {
                 // Remove leading slash
-                originalCommand = originalCommand[1..];
+                messageString = messageString[1..];
             }
+
+            string[] messageSplit = messageString.Split(' ', 2);
+            string originalCommand = messageSplit[0];
 
             string? canonicalCommand = _configService.GetCanonicalCommandForAlias(originalCommand)?.Canonical;
             if (canonicalCommand == null)
@@ -126,11 +129,12 @@ internal sealed unsafe class CommandAliasPlusPlus : IHostedService
                 return;
             }
 
+            string? originalArgs = messageSplit.Length > 1 ? messageSplit[1] : null;
             string translatedCommand = Regexes.Token()
                 .Replace(canonicalCommand, (match) => TranslateToken(match.Groups[1].Value));
             _logger.Information("Detour: Alias was successfully matched and canonical command has been translated into {command}", translatedCommand);
 
-            Utf8String translatedCommandUtf8String = new("/" + translatedCommand);
+            Utf8String translatedCommandUtf8String = new($"/{translatedCommand}{(originalArgs == null ? "" : " " + originalArgs)}");
             _logger.Debug("Detour: Executing translated command.");
 
             _executeCommandInnerHook!.Original(self, &translatedCommandUtf8String, uiModule);

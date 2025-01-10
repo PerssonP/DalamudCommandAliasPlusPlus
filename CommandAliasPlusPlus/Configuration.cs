@@ -51,6 +51,12 @@ internal record class AliasCommand
             return;
         }
 
+        if (Alias.Contains(' '))
+        {
+            Error = "Alias command should only be one word";
+            return;
+        }
+
         if (AliasBlacklist.Contains(Alias, StringComparer.OrdinalIgnoreCase))
         {
             Error = "Do not use this command as an alias";
