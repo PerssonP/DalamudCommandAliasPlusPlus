@@ -24,11 +24,13 @@ internal class ConfigurationService(IDalamudPluginInterface pluginInterface)
         => Config.AliasCommands.ForEach(alias => alias.CheckValid());
 
     /// <summary>
-    /// Get canonical command for given alias. Returns null if alias is not registered.
+    /// Get AliasCommand for given alias. Returns null if alias is not registered.<br />
+    /// Only returns AliasCommands with no errors.
     /// </summary>
     /// <param name="alias">String to look for in Config.AliasCommands</param>
-    /// <returns>Canonical command as a string or null if alias is not registered</returns>
-    public string? GetCanonicalCommandForAlias(string alias)
+    /// <returns>AliasCommand or null if alias is not registered</returns>
+    public AliasCommand? GetCanonicalCommandForAlias(string alias)
         => Config.AliasCommands.FirstOrDefault(command =>
-            command.Alias.Equals(alias, StringComparison.OrdinalIgnoreCase))?.Canonical;
+            command.Error == null &&
+            command.Alias.Equals(alias, StringComparison.OrdinalIgnoreCase));
 }

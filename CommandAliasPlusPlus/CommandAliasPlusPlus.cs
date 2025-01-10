@@ -114,7 +114,7 @@ internal sealed unsafe class CommandAliasPlusPlus : IHostedService
                 originalCommand = "/" + originalCommand[(originalCommand.IndexOf(' ') + 1)..];
             }
 
-            string? canonicalCommand = _configService.GetCanonicalCommandForAlias(originalCommand);
+            string? canonicalCommand = _configService.GetCanonicalCommandForAlias(originalCommand)?.Canonical;
             if (canonicalCommand == null)
             {
                 _logger.Debug("Detour: Command was not a registered alias. Ending.");
