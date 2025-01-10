@@ -2,6 +2,7 @@ using Dalamud.Configuration;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace CommandAliasPlusPlus;
 
@@ -29,7 +30,8 @@ internal record class AliasCommand
 
     [JsonIgnore]
     public string? Error { get; private set; } = null;
-
+    [JsonIgnore]
+    private static readonly string[] AliasBlacklist = ["/alias", "/aliasconfig"];
     /// <summary>
     /// Check if AliasCommand is valid. Sets AliasCommand.Valid to true or false.
     /// </summary>
@@ -45,6 +47,12 @@ internal record class AliasCommand
         if (char.IsWhiteSpace(Alias[0]))
         {
             Error = "Alias command cannot begin with whitespace";
+            return;
+        }
+
+        if (AliasBlacklist.Contains(Alias, StringComparer.OrdinalIgnoreCase))
+        {
+            Error = "Do not use this command as an alias";
             return;
         }
 
