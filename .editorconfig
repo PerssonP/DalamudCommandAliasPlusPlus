@@ -21,7 +21,7 @@ csharp_new_line_before_finally = true
 csharp_new_line_before_members_in_object_initializers = false
 csharp_new_line_before_open_brace = all
 csharp_preferred_modifier_order = public, private, protected, internal, new, abstract, virtual, sealed, override, static, readonly, extern, unsafe, volatile, async:suggestion
-csharp_style_var_elsewhere = false:suggestion
+csharp_style_var_elsewhere = true:suggestion
 csharp_style_var_for_built_in_types = false:suggestion
 csharp_style_var_when_type_is_apparent = true:suggestion
 dotnet_code_quality_unused_parameters = non_public:suggestion
@@ -175,6 +175,7 @@ csharp_style_prefer_not_pattern = true:suggestion
 csharp_style_pattern_matching_over_as_with_null_check = true:suggestion
 csharp_style_prefer_extended_property_pattern = true:suggestion
 csharp_prefer_system_threading_lock = true:suggestion
+csharp_prefer_static_anonymous_function = true:suggestion
 
 [*.{appxmanifest,asax,ascx,aspx,axaml,axml,build,c,c++,cc,cginc,compute,config,cp,cpp,cs,cshtml,csproj,css,cu,cuh,cxx,dbml,discomap,dtd,h,hh,hlsl,hlsli,hlslinc,hpp,htm,html,hxx,inc,inl,ino,ipp,js,json,jsproj,jsx,lsproj,master,mpp,mq4,mq5,mqh,njsproj,nuspec,paml,proj,props,proto,razor,resjson,resw,resx,skin,StyleCop,targets,tasks,tpp,ts,tsx,usf,ush,vb,vbproj,xaml,xamlx,xml,xoml,xsd}]
 indent_style = space

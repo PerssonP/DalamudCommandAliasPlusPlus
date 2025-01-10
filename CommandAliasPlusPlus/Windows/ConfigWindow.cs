@@ -50,7 +50,7 @@ internal class ConfigWindow : Window
         {
             bool changed = false;
 
-            AliasCommand command = _configService.Config.AliasCommands[i];
+            var command = _configService.Config.AliasCommands[i];
             string alias = command.Alias;
             string canon = command.Canonical;
 

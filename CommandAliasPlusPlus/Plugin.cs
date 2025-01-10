@@ -23,29 +23,28 @@ internal class Plugin : IDalamudPlugin
         IDataManager dataManager,
         IGameInteropProvider gameInteropProvider)
     {
-        _host = new HostBuilder()
-            .UseContentRoot(pluginInterface.ConfigDirectory.FullName)
-            .ConfigureServices(services =>
-            {
-                services
-                    // Dalamud services
-                    .AddSingleton(pluginInterface)
-                    .AddSingleton(pluginLog)
-                    .AddSingleton(commandManager)
-                    .AddSingleton(clientState)
-                    .AddSingleton(dataManager)
-                    .AddSingleton(gameInteropProvider)
-                    // Plugin
-                    .AddHostedService<CommandAliasPlusPlus>()
-                    .AddSingleton<ConfigurationService>()
-                    .AddSingleton<WindowService>()
-                    .AddSingleton<CommandService>()
-                    .AddSingleton<ConfigWindow>()
-                    .AddSingleton<IntroductionWindow>()
-                    .AddSingleton<TokenInfoWindow>();
-            })
-            .Build();
+        var builder = Host.CreateEmptyApplicationBuilder(new()
+        {
+            ContentRootPath = pluginInterface.ConfigDirectory.FullName
+        });
 
+        builder.Services
+            .AddHostedService<CommandAliasPlusPlus>()
+            // Dalamud services
+            .AddSingleton(pluginInterface)
+            .AddSingleton(pluginLog)
+            .AddSingleton(commandManager).AddSingleton(clientState)
+            .AddSingleton(dataManager)
+            .AddSingleton(gameInteropProvider)
+            // Plugin
+            .AddSingleton<ConfigurationService>()
+            .AddSingleton<WindowService>()
+            .AddSingleton<CommandService>()
+            .AddSingleton<ConfigWindow>()
+            .AddSingleton<IntroductionWindow>()
+            .AddSingleton<TokenInfoWindow>();
+
+        _host = builder.Build();
         _host.StartAsync();
     }
 

@@ -1,6 +1,5 @@
 using CommandAliasPlusPlus.Services;
 using Dalamud.Hooking;
-using Dalamud.Plugin;
 using Dalamud.Plugin.Services;
 using FFXIVClientStructs.FFXIV.Client.System.String;
 using FFXIVClientStructs.FFXIV.Client.UI;
@@ -9,7 +8,6 @@ using ImGuiNET;
 using Microsoft.Extensions.Hosting;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
@@ -71,7 +69,7 @@ internal sealed unsafe class CommandAliasPlusPlus : IHostedService
         }
 
 #if DEBUG
-        foreach (AliasCommand aliasCommand in _configService.Config.AliasCommands)
+        foreach (var aliasCommand in _configService.Config.AliasCommands)
             _logger.Debug(aliasCommand.ToString());
 #endif
 
