@@ -24,7 +24,7 @@ internal sealed unsafe class CommandAliasPlusPlus : IHostedService
     private readonly IPluginLog _logger;
     private readonly ICommandManager _commandManager;
 
-    private readonly Configuration _config;
+    private readonly ConfigurationService _configService;
     private readonly CommandService _commandService;
     private readonly WindowService _windowService;
 
@@ -42,7 +42,7 @@ internal sealed unsafe class CommandAliasPlusPlus : IHostedService
         _logger = logger;
         _commandManager = commandManager;
 
-        _config = configService.Config;
+        _configService = configService;
         _commandService = commandService;
         _windowService = windowService;
 
@@ -60,9 +60,16 @@ internal sealed unsafe class CommandAliasPlusPlus : IHostedService
         _commandManager.AddHandler(CommandService.ConfigCommandName, _commandService.ConfigCommandInfo);
         _executeCommandInnerHook.Enable();
 
-        _config.AliasCheckValid();
+        _configService.Config.AliasCheckValid();
 
-        foreach (AliasCommand aliasCommand in _config.AliasCommands)
+        if (_configService.Config.FirstTime)
+        {
+            _windowService.ToggleIntroWindow();
+            _configService.Config.FirstTime = false;
+            _configService.Save();
+        }
+
+        foreach (AliasCommand aliasCommand in _configService.Config.AliasCommands)
             _logger.Debug(aliasCommand.ToString());
 
         return Task.CompletedTask;
@@ -104,7 +111,8 @@ internal sealed unsafe class CommandAliasPlusPlus : IHostedService
                 originalCommand = "/" + originalCommand[(originalCommand.IndexOf(' ') + 1)..];
             }
 
-            string? canonicalCommand = _config.AliasCommands.FirstOrDefault(command => command.Alias.Equals(originalCommand, StringComparison.OrdinalIgnoreCase))?.Canonical;
+            string? canonicalCommand = _configService.Config.AliasCommands.FirstOrDefault(command =>
+                command.Alias.Equals(originalCommand, StringComparison.OrdinalIgnoreCase))?.Canonical;
             if (canonicalCommand == null)
             {
                 _logger.Debug("Detour: Command was not a registered alias. Ending.");

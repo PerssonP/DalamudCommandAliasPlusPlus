@@ -12,6 +12,7 @@ public class Configuration : IPluginConfiguration
 {
     public int Version { get; set; } = 0;
 
+    public bool FirstTime { get; set; } = true;
     public List<AliasCommand> AliasCommands { get; set; } = [];
     /// <summary>
     /// Run validity checks for all aliases.
