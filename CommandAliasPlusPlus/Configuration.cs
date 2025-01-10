@@ -31,12 +31,13 @@ internal record class AliasCommand
     [JsonIgnore]
     public string? Error { get; private set; } = null;
     [JsonIgnore]
-    private static readonly string[] AliasBlacklist = ["/alias", "/aliasconfig"];
+    private static readonly string[] AliasBlacklist = ["alias", "aliasconfig"];
     /// <summary>
     /// Check if AliasCommand is valid. Sets AliasCommand.Valid to true or false.
     /// </summary>
     public void CheckValid()
     {
+        // TODO: Clean this up..
         // Check Alias
         if (Alias == string.Empty)
         {
@@ -66,6 +67,12 @@ internal record class AliasCommand
         if (char.IsWhiteSpace(Canonical[0]))
         {
             Error = "Canonical command cannot begin with whitespace";
+            return;
+        }
+
+        if (Alias[0] == '/' || Canonical[0] == '/')
+        {
+            Error = "Don't start your command with /";
             return;
         }
 

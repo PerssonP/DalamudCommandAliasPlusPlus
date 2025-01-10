@@ -54,9 +54,13 @@ internal class ConfigWindow : Window
             string alias = command.Alias;
             string canon = command.Canonical;
 
+            ImGui.TextUnformatted("/");
+            ImGui.SameLine();
             ImGui.SetNextItemWidth(-5);
             changed |= ImGui.InputText($"###alias{command.Id}", ref alias, 500);
             ImGui.NextColumn();
+            ImGui.TextUnformatted("/");
+            ImGui.SameLine();
             ImGui.SetNextItemWidth(-5);
             changed |= ImGui.InputText($"###canon{command.Id}", ref canon, 500);
             ImGui.NextColumn();

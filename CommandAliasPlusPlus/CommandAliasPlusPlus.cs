@@ -111,7 +111,12 @@ internal sealed unsafe class CommandAliasPlusPlus : IHostedService
             {
                 // Command is alias-command. Set command to be args of alias
                 _logger.Debug("Detour: Alias-command found. Extracting args and continuing parse.");
-                originalCommand = "/" + originalCommand[(originalCommand.IndexOf(' ') + 1)..];
+                originalCommand = originalCommand[(originalCommand.IndexOf(' ') + 1)..];
+            }
+            else
+            {
+                // Remove leading slash
+                originalCommand = originalCommand[1..];
             }
 
             string? canonicalCommand = _configService.GetCanonicalCommandForAlias(originalCommand)?.Canonical;
@@ -125,7 +130,7 @@ internal sealed unsafe class CommandAliasPlusPlus : IHostedService
                 .Replace(canonicalCommand, (match) => TranslateToken(match.Groups[1].Value));
             _logger.Information("Detour: Alias was successfully matched and canonical command has been translated into {command}", translatedCommand);
 
-            Utf8String translatedCommandUtf8String = new(translatedCommand);
+            Utf8String translatedCommandUtf8String = new("/" + translatedCommand);
             _logger.Debug("Detour: Executing translated command.");
 
             _executeCommandInnerHook!.Original(self, &translatedCommandUtf8String, uiModule);
