@@ -1,5 +1,6 @@
 using CommandAliasPlusPlus.Windows;
 using Dalamud.Interface.Windowing;
+using Dalamud.Plugin;
 using System;
 
 namespace CommandAliasPlusPlus.Services;
@@ -7,15 +8,19 @@ namespace CommandAliasPlusPlus.Services;
 /// <summary>
 /// Service to handle windows and WindowSystem.
 /// </summary>
-internal class WindowService : IDisposable
+internal class WindowService(
+    IDalamudPluginInterface pluginInterface,
+    ConfigWindow configWindow)
+    : IDisposable
 {
     private readonly WindowSystem _windowSystem = new("CommandAlias++");
-    private readonly ConfigWindow _configWindow;
 
-    public WindowService(ConfigWindow configWindow)
+    public void InitWindows()
     {
-        _configWindow = configWindow;
-        _windowSystem.AddWindow(_configWindow);
+        _windowSystem.AddWindow(configWindow);
+
+        pluginInterface.UiBuilder.Draw += DrawUI;
+        pluginInterface.UiBuilder.OpenConfigUi += ToggleConfigUI;
     }
 
     public void Dispose()
@@ -24,5 +29,5 @@ internal class WindowService : IDisposable
     }
 
     public void DrawUI() => _windowSystem.Draw();
-    public void ToggleConfigUI() => _configWindow.Toggle();
+    public void ToggleConfigUI() => configWindow.Toggle();
 }

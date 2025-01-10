@@ -22,7 +22,6 @@ namespace CommandAliasPlusPlus;
 internal sealed unsafe class CommandAliasPlusPlus : IHostedService
 {
     private readonly IPluginLog _logger;
-    private readonly IDalamudPluginInterface _pluginInterface;
     private readonly ICommandManager _commandManager;
 
     private readonly Configuration _config;
@@ -34,7 +33,6 @@ internal sealed unsafe class CommandAliasPlusPlus : IHostedService
 
     public CommandAliasPlusPlus(
         IPluginLog logger,
-        IDalamudPluginInterface pluginInterface,
         ICommandManager commandManager,
         IGameInteropProvider gameInteropProvider,
         ConfigurationService configService,
@@ -42,15 +40,11 @@ internal sealed unsafe class CommandAliasPlusPlus : IHostedService
         WindowService windowService)
     {
         _logger = logger;
-        _pluginInterface = pluginInterface;
         _commandManager = commandManager;
 
         _config = configService.Config;
         _commandService = commandService;
         _windowService = windowService;
-
-        _pluginInterface.UiBuilder.Draw += windowService.DrawUI;
-        _pluginInterface.UiBuilder.OpenConfigUi += windowService.ToggleConfigUI;
 
         _executeCommandInnerHook = gameInteropProvider.HookFromAddress<ShellCommandModule.Delegates.ExecuteCommandInner>(
             ShellCommandModule.MemberFunctionPointers.ExecuteCommandInner,
@@ -60,6 +54,8 @@ internal sealed unsafe class CommandAliasPlusPlus : IHostedService
 
     public Task StartAsync(CancellationToken cancellationToken)
     {
+        _windowService.InitWindows();
+
         _commandManager.AddHandler(CommandService.AliasCommandName, _commandService.AliasCommandInfo);
         _commandManager.AddHandler(CommandService.ConfigCommandName, _commandService.ConfigCommandInfo);
         _executeCommandInnerHook.Enable();
