@@ -28,7 +28,7 @@ internal record class AliasCommand
     public string Canonical { get; set; } = "";
 
     [JsonIgnore]
-    public bool Valid { get; private set; } = false;
+    public string? Error { get; private set; } = null;
 
     /// <summary>
     /// Check if AliasCommand is valid. Sets AliasCommand.Valid to true or false.
@@ -36,19 +36,31 @@ internal record class AliasCommand
     public void CheckValid()
     {
         // Check Alias
-        if (Alias == string.Empty || char.IsWhiteSpace(Alias[0]))
+        if (Alias == string.Empty)
         {
-            Valid = false;
+            Error = "Alias command cannot be empty";
             return;
         }
 
-        // Check Alias
-        if (Canonical == string.Empty || char.IsWhiteSpace(Canonical[0]))
+        if (char.IsWhiteSpace(Alias[0]))
         {
-            Valid = false;
+            Error = "Alias command cannot begin with whitespace";
             return;
         }
 
-        Valid = true;
+        // Check Canonical
+        if (Canonical == string.Empty)
+        {
+            Error = "Canonical command cannot be empty";
+            return;
+        }
+
+        if (char.IsWhiteSpace(Canonical[0]))
+        {
+            Error = "Canonical command cannot begin with whitespace";
+            return;
+        }
+
+        Error = null;
     }
 }

@@ -25,7 +25,7 @@ internal class ConfigWindow : Window
         
         SizeConstraints = new WindowSizeConstraints
         {
-            MinimumSize = new Vector2(375, 330),
+            MinimumSize = new Vector2(500, 330),
             MaximumSize = new Vector2(float.MaxValue, float.MaxValue)
         };
     }
@@ -37,10 +37,11 @@ internal class ConfigWindow : Window
             _tokenInfoWindow.Toggle();
         ImGui.Separator();
 
-        ImGui.Columns(3);
+        ImGui.Columns(4);
         ImGui.TextUnformatted("Alias command");
         ImGui.NextColumn();
         ImGui.TextUnformatted("Canonical command");
+        ImGui.NextColumn();
         ImGui.NextColumn();
         ImGui.NextColumn();
         ImGui.Separator();
@@ -66,6 +67,9 @@ internal class ConfigWindow : Window
                 return;
             }
             ImGui.NextColumn();
+            if (command.Error != null)
+                ImGui.TextUnformatted(command.Error);
+            ImGui.NextColumn();
             ImGui.Separator();
 
             if (changed)
@@ -80,7 +84,9 @@ internal class ConfigWindow : Window
         ImGui.Columns(1);
         if (ImGui.Button("Add new row"))
         {
-            _configService.Config.AliasCommands.Add(new AliasCommand());
+            AliasCommand newCommand = new();
+            newCommand.CheckValid();
+            _configService.Config.AliasCommands.Add(newCommand);
             _configService.Save();
         }
     }
