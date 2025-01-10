@@ -32,7 +32,6 @@ internal class ConfigWindow : Window
 
     public override void Draw()
     {
-        bool changed = false;
         
         if (ImGui.Button("?"))
             _tokenInfoWindow.Toggle();
@@ -48,42 +47,41 @@ internal class ConfigWindow : Window
 
         for (int i = 0; i < _configService.Config.AliasCommands.Count; i++)
         {
+            bool changed = false;
+
             AliasCommand command = _configService.Config.AliasCommands[i];
             string alias = command.Alias;
             string canon = command.Canonical;
 
             ImGui.SetNextItemWidth(-5);
-            if (ImGui.InputText($"###alias{command.Id}", ref alias, 500))
-            {
-                command.Alias = alias;
-                changed = true;
-            }
+            changed |= ImGui.InputText($"###alias{command.Id}", ref alias, 500);
             ImGui.NextColumn();
             ImGui.SetNextItemWidth(-5);
-            if (ImGui.InputText($"###canon{command.Id}", ref canon, 500))
-            {
-                command.Canonical = canon;
-                changed = true;
-            }
+            changed |= ImGui.InputText($"###canon{command.Id}", ref canon, 500);
             ImGui.NextColumn();
             if (ImGui.Button($"-###delete{command.Id}"))
             {
                 _configService.Config.AliasCommands.RemoveAt(i);
-                changed = true;
+                _configService.Save();
+                return;
             }
             ImGui.NextColumn();
             ImGui.Separator();
+
+            if (changed)
+            {
+                command.Alias = alias;
+                command.Canonical = canon;
+                command.CheckValid();
+                _configService.Save();
+            }
         }
 
         ImGui.Columns(1);
         if (ImGui.Button("Add new row"))
         {
             _configService.Config.AliasCommands.Add(new AliasCommand());
-            changed = true;
-        }
-
-        if (changed)
             _configService.Save();
-        
+        }
     }
 }
