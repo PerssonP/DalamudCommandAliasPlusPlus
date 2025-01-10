@@ -60,8 +60,9 @@ internal sealed unsafe class CommandAliasPlusPlus : IHostedService
         _commandManager.AddHandler(CommandService.ConfigCommandName, _commandService.ConfigCommandInfo);
         _executeCommandInnerHook.Enable();
 
-        _configService.Config.AliasCheckValid();
+        _configService.RunAliasCommandValidityChecks();
 
+        // Show IntroductionWindow on first time plugin loads
         if (_configService.Config.FirstTime)
         {
             _windowService.ToggleIntroWindow();
@@ -69,8 +70,10 @@ internal sealed unsafe class CommandAliasPlusPlus : IHostedService
             _configService.Save();
         }
 
+#if DEBUG
         foreach (AliasCommand aliasCommand in _configService.Config.AliasCommands)
             _logger.Debug(aliasCommand.ToString());
+#endif
 
         return Task.CompletedTask;
     }
@@ -111,8 +114,7 @@ internal sealed unsafe class CommandAliasPlusPlus : IHostedService
                 originalCommand = "/" + originalCommand[(originalCommand.IndexOf(' ') + 1)..];
             }
 
-            string? canonicalCommand = _configService.Config.AliasCommands.FirstOrDefault(command =>
-                command.Alias.Equals(originalCommand, StringComparison.OrdinalIgnoreCase))?.Canonical;
+            string? canonicalCommand = _configService.GetCanonicalCommandForAlias(originalCommand);
             if (canonicalCommand == null)
             {
                 _logger.Debug("Detour: Command was not a registered alias. Ending.");

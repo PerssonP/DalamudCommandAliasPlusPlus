@@ -8,17 +8,12 @@ namespace CommandAliasPlusPlus;
 /// <summary>
 /// Configuration class for CommandAliasPlusPlus.
 /// </summary>
-public class Configuration : IPluginConfiguration
+internal class Configuration : IPluginConfiguration
 {
     public int Version { get; set; } = 0;
 
     public bool FirstTime { get; set; } = true;
     public List<AliasCommand> AliasCommands { get; set; } = [];
-    /// <summary>
-    /// Run validity checks for all aliases.
-    /// </summary>
-    public void AliasCheckValid()
-        => AliasCommands.ForEach(alias => alias.CheckValid());
 }
 
 /// <summary>
@@ -26,7 +21,7 @@ public class Configuration : IPluginConfiguration
 /// Each AliasCommand has a unique ID which is used to keep track of the object (e.g. in ConfigWindow).<br />
 /// Each AliasCommand also has a flag to indicate if the command is valid. This flag is not written to disk. Use <see cref="CheckValid"/> to calculate the flag.
 /// </summary>
-public record class AliasCommand
+internal record class AliasCommand
 {
     public Guid Id { get; init; } = Guid.NewGuid();
     public string Alias { get; set; } = "";
@@ -35,7 +30,8 @@ public record class AliasCommand
     [JsonIgnore]
     public bool Delete { get; set; } = false;
     [JsonIgnore]
-    public bool Valid { get; set; } = false;
+    public bool Valid { get; private set; } = false;
+
     /// <summary>
     /// Check if AliasCommand is valid. Sets AliasCommand.Valid to true or false.
     /// </summary>

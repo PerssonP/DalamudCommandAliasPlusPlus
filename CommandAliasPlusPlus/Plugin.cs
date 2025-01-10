@@ -11,7 +11,7 @@ namespace CommandAliasPlusPlus;
 /// <summary>
 /// Bootstrap class for CommandAliasPlusPlus.
 /// </summary>
-public class Plugin : IDalamudPlugin
+internal class Plugin : IDalamudPlugin
 {
     private readonly IHost _host;
 
