@@ -46,10 +46,12 @@ internal class ConfigWindow : Window
         ImGui.NextColumn();
         ImGui.Separator();
 
-        foreach (AliasCommand command in _configService.Config.AliasCommands)
+        for (int i = 0; i < _configService.Config.AliasCommands.Count; i++)
         {
+            AliasCommand command = _configService.Config.AliasCommands[i];
             string alias = command.Alias;
             string canon = command.Canonical;
+
             ImGui.SetNextItemWidth(-5);
             if (ImGui.InputText($"###alias{command.Id}", ref alias, 500))
             {
@@ -64,10 +66,9 @@ internal class ConfigWindow : Window
                 changed = true;
             }
             ImGui.NextColumn();
-
             if (ImGui.Button($"-###delete{command.Id}"))
             {
-                command.Delete = true;
+                _configService.Config.AliasCommands.RemoveAt(i);
                 changed = true;
             }
             ImGui.NextColumn();
@@ -82,12 +83,7 @@ internal class ConfigWindow : Window
         }
 
         if (changed)
-        {
-            int deletionIndex = _configService.Config.AliasCommands.FindIndex(c => c.Delete);
-            if (deletionIndex != -1)
-                _configService.Config.AliasCommands.RemoveAt(deletionIndex);
-
             _configService.Save();
-        }
+        
     }
 }

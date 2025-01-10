@@ -28,8 +28,6 @@ internal record class AliasCommand
     public string Canonical { get; set; } = "";
 
     [JsonIgnore]
-    public bool Delete { get; set; } = false;
-    [JsonIgnore]
     public bool Valid { get; private set; } = false;
 
     /// <summary>
