@@ -10,7 +10,9 @@ namespace CommandAliasPlusPlus.Services;
 /// </summary>
 internal class WindowService(
     IDalamudPluginInterface pluginInterface,
-    ConfigWindow configWindow)
+    ConfigWindow configWindow,
+    IntroductionWindow introWindow,
+    TokenInfoWindow tokenInfoWindow)
     : IDisposable
 {
     private readonly WindowSystem _windowSystem = new("CommandAlias++");
@@ -18,9 +20,11 @@ internal class WindowService(
     public void InitWindows()
     {
         _windowSystem.AddWindow(configWindow);
+        _windowSystem.AddWindow(introWindow);
+        _windowSystem.AddWindow(tokenInfoWindow);
 
         pluginInterface.UiBuilder.Draw += DrawUI;
-        pluginInterface.UiBuilder.OpenConfigUi += ToggleConfigUI;
+        pluginInterface.UiBuilder.OpenConfigUi += ToggleConfigWindow;
     }
 
     public void Dispose()
@@ -29,5 +33,8 @@ internal class WindowService(
     }
 
     public void DrawUI() => _windowSystem.Draw();
-    public void ToggleConfigUI() => configWindow.Toggle();
+
+    public void ToggleConfigWindow() => configWindow.Toggle();
+    public void ToggleIntroWindow() => introWindow.Toggle();
+    public void ToggleTokenInfoWindow() => tokenInfoWindow.Toggle();
 }

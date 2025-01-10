@@ -61,6 +61,6 @@ Aliases created with CommandAlias++ cannot be used in macros however the /alias 
     /// <param name="command"></param>
     /// <param name="alias"></param>
     private void HandleConfigCommand(string command, string alias)
-        => windowService.ToggleConfigUI();
+        => windowService.ToggleConfigWindow();
     
 }

@@ -40,7 +40,9 @@ public class Plugin : IDalamudPlugin
                     .AddSingleton<ConfigurationService>()
                     .AddSingleton<WindowService>()
                     .AddSingleton<CommandService>()
-                    .AddSingleton<ConfigWindow>();
+                    .AddSingleton<ConfigWindow>()
+                    .AddSingleton<IntroductionWindow>()
+                    .AddSingleton<TokenInfoWindow>();
             })
             .Build();
 
