@@ -11,15 +11,15 @@ namespace CommandAliasPlusPlus.Windows;
 internal class ConfigWindow : Window
 {
     private readonly ConfigurationService _configService;
-    private readonly TokenInfoWindow _tokenInfoWindow;
-
+    private readonly UIService _uiService;
+    
     public ConfigWindow(
         ConfigurationService configService,
-        TokenInfoWindow tokenInfoWindow)
+        UIService uiService)
         : base("CommandAlias++ Configuration")
     {
         _configService = configService;
-        _tokenInfoWindow = tokenInfoWindow;
+        _uiService = uiService;
 
         Flags = ImGuiWindowFlags.NoScrollbar | ImGuiWindowFlags.NoScrollWithMouse;
         
@@ -32,9 +32,8 @@ internal class ConfigWindow : Window
 
     public override void Draw()
     {
-        
         if (ImGui.Button("?"))
-            _tokenInfoWindow.Toggle();
+            _uiService.OpenOrFocusWindow<TokenInfoWindow>();
         ImGui.Separator();
 
         ImGui.Columns(4);

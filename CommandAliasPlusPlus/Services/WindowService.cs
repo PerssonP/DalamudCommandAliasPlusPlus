@@ -6,35 +6,29 @@ using System;
 namespace CommandAliasPlusPlus.Services;
 
 /// <summary>
-/// Service to handle windows and WindowSystem.
+/// Service to handle setup and disposal of windows in WindowSystem.
 /// </summary>
 internal class WindowService(
     IDalamudPluginInterface pluginInterface,
+    WindowSystem windowSystem,
+    UIService uiService,
     ConfigWindow configWindow,
     IntroductionWindow introWindow,
     TokenInfoWindow tokenInfoWindow)
     : IDisposable
 {
-    private readonly WindowSystem _windowSystem = new("CommandAlias++");
-
     public void InitWindows()
     {
-        _windowSystem.AddWindow(configWindow);
-        _windowSystem.AddWindow(introWindow);
-        _windowSystem.AddWindow(tokenInfoWindow);
+        windowSystem.AddWindow(configWindow);
+        windowSystem.AddWindow(introWindow);
+        windowSystem.AddWindow(tokenInfoWindow);
 
-        pluginInterface.UiBuilder.Draw += DrawUI;
-        pluginInterface.UiBuilder.OpenConfigUi += ToggleConfigWindow;
+        pluginInterface.UiBuilder.Draw += windowSystem.Draw;
+        pluginInterface.UiBuilder.OpenConfigUi += uiService.ToggleWindow<ConfigWindow>;
     }
 
     public void Dispose()
     {
-        _windowSystem.RemoveAllWindows();
+        windowSystem.RemoveAllWindows();
     }
-
-    public void DrawUI() => _windowSystem.Draw();
-
-    public void ToggleConfigWindow() => configWindow.Toggle();
-    public void ToggleIntroWindow() => introWindow.Toggle();
-    public void ToggleTokenInfoWindow() => tokenInfoWindow.Toggle();
 }

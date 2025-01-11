@@ -1,3 +1,4 @@
+using CommandAliasPlusPlus.Windows;
 using Dalamud.Game.Command;
 using Dalamud.Plugin.Services;
 using FFXIVClientStructs.FFXIV.Client.System.String;
@@ -9,7 +10,7 @@ namespace CommandAliasPlusPlus.Services;
 /// <summary>
 /// Service to handle the custom plugin commands.
 /// </summary>
-internal unsafe class CommandService(WindowService windowService, IPluginLog logger)
+internal unsafe class CommandService(UIService uiService, IPluginLog logger)
 {
     /// <summary>
     /// Command to run an alias.
@@ -61,6 +62,6 @@ Aliases created with CommandAlias++ cannot be used in macros however the /alias 
     /// <param name="command"></param>
     /// <param name="alias"></param>
     private void HandleConfigCommand(string command, string alias)
-        => windowService.ToggleConfigWindow();
+        => uiService.ToggleWindow<ConfigWindow>();
     
 }

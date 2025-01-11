@@ -1,4 +1,5 @@
 using CommandAliasPlusPlus.Services;
+using CommandAliasPlusPlus.Windows;
 using Dalamud.Hooking;
 using Dalamud.Plugin.Services;
 using FFXIVClientStructs.FFXIV.Client.System.String;
@@ -25,6 +26,7 @@ internal sealed unsafe class CommandAliasPlusPlus : IHostedService
     private readonly ConfigurationService _configService;
     private readonly CommandService _commandService;
     private readonly WindowService _windowService;
+    private readonly UIService _uiService;
 
     private readonly Hook<ShellCommandModule.Delegates.ExecuteCommandInner> _executeCommandInnerHook;
     private readonly Dictionary<string, int> _listsAndLastGrabbedIndex = [];
@@ -35,7 +37,8 @@ internal sealed unsafe class CommandAliasPlusPlus : IHostedService
         IGameInteropProvider gameInteropProvider,
         ConfigurationService configService,
         CommandService commandService,
-        WindowService windowService)
+        WindowService windowService,
+        UIService uiService)
     {
         _logger = logger;
         _commandManager = commandManager;
@@ -43,6 +46,7 @@ internal sealed unsafe class CommandAliasPlusPlus : IHostedService
         _configService = configService;
         _commandService = commandService;
         _windowService = windowService;
+        _uiService = uiService;
 
         _executeCommandInnerHook = gameInteropProvider.HookFromAddress<ShellCommandModule.Delegates.ExecuteCommandInner>(
             ShellCommandModule.MemberFunctionPointers.ExecuteCommandInner,
@@ -63,7 +67,7 @@ internal sealed unsafe class CommandAliasPlusPlus : IHostedService
         // Show IntroductionWindow on first time plugin loads
         if (_configService.Config.FirstTime)
         {
-            _windowService.ToggleIntroWindow();
+            _uiService.ToggleWindow<IntroductionWindow>();
             _configService.Config.FirstTime = false;
             _configService.Save();
         }
