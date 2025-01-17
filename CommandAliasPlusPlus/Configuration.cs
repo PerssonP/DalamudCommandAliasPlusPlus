@@ -36,7 +36,8 @@ internal record class AliasCommand
     public string? Error { get; private set; } = null;
 
     /// <summary>
-    /// Check if AliasCommand is valid. Sets AliasCommand.Valid to true or false.
+    /// Check if AliasCommand is valid.<br />
+    /// Sets AliasCommand.Valid to null if validation is passed, otherwise to an error message.
     /// </summary>
     public void CheckValid()
     {
