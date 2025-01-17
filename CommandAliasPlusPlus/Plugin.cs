@@ -1,4 +1,3 @@
-
 using CommandAliasPlusPlus.Services;
 using CommandAliasPlusPlus.Windows;
 using Dalamud.Interface.Windowing;

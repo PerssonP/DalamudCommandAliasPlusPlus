@@ -79,7 +79,7 @@ internal class ConfigWindow : Window
             {
                 command.Alias = alias;
                 command.Canonical = canon;
-                command.CheckValid();
+                _configService.ValidateAliasCommand(command);
                 _configService.Save();
             }
         }
@@ -88,7 +88,7 @@ internal class ConfigWindow : Window
         if (ImGui.Button("Add new row"))
         {
             AliasCommand newCommand = new();
-            newCommand.CheckValid();
+            _configService.ValidateAliasCommand(newCommand);
             _configService.Config.AliasCommands.Add(newCommand);
             _configService.Save();
         }

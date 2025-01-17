@@ -62,7 +62,7 @@ internal sealed unsafe class CommandAliasPlusPlus : IHostedService
         _commandManager.AddHandler(CommandService.ConfigCommandName, _commandService.ConfigCommandInfo);
         _executeCommandInnerHook.Enable();
 
-        _configService.RunAliasCommandValidityChecks();
+        _configService.ValidateConfiguration();
 
         // Show IntroductionWindow on first time plugin loads
         if (_configService.Config.FirstTime)
