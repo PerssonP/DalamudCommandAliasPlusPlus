@@ -50,7 +50,7 @@ internal sealed unsafe class CommandAliasPlusPlus : IHostedService
 
         _executeCommandInnerHook = gameInteropProvider.HookFromAddress<ShellCommandModule.Delegates.ExecuteCommandInner>(
             ShellCommandModule.MemberFunctionPointers.ExecuteCommandInner,
-            DetourExecuteCommandInner
+            ExecuteCommandInnerDetour
         );
     }
 
@@ -93,7 +93,7 @@ internal sealed unsafe class CommandAliasPlusPlus : IHostedService
     /// <summary>
     /// Detour for ExecuteCommandInner. If message is not consumed by the detour it will be returned to the original function.
     /// </summary>
-    private void DetourExecuteCommandInner(ShellCommandModule* self, Utf8String* message, UIModule* uiModule)
+    private void ExecuteCommandInnerDetour(ShellCommandModule* self, Utf8String* message, UIModule* uiModule)
     {
         _logger.Debug("Detour: Detour hit for ExecuteCommandInner");
         bool commandConsumed = false;
@@ -106,7 +106,7 @@ internal sealed unsafe class CommandAliasPlusPlus : IHostedService
             }
 
             string messageString = message->ToString();
-            _logger.Debug("Detour: Original command was {command}", messageString);
+            _logger.Debug("Detour: Original message was {message}", messageString);
 
             if (messageString.StartsWith("/alias ", StringComparison.OrdinalIgnoreCase))
             {
@@ -143,14 +143,14 @@ internal sealed unsafe class CommandAliasPlusPlus : IHostedService
         }
         catch (Exception ex)
         {
-            _logger.Error(ex, "An error occured when detouring ExecuteCommandInner.");
+            _logger.Error(ex, "An error occured when detouring ExecuteCommandInner. Original message will be sent to base function.");
         }
         finally
         {
             // If the command was not consumed in prior code, return it here unaltered
             if (!commandConsumed)
             {
-                _logger.Debug("Detour: Message was not consumed by detour. Returning message to originl function.");
+                _logger.Debug("Detour: Message was not consumed by detour. Returning message to original function.");
                 _executeCommandInnerHook!.Original(self, message, uiModule);
             }
         }
@@ -187,10 +187,12 @@ internal sealed unsafe class CommandAliasPlusPlus : IHostedService
         _logger.Debug("List token: Using key {list}", list);
         if (_listsAndLastGrabbedIndex.TryGetValue(list, out int lastGrabbedIndex))
         {
+            // TODO: Function serches further than needed. If index is 1 and list size is 5
+            // values will be length of 5 when we could of stopped after the second element
             string[] values = list.Split(',');
             int newIndex = lastGrabbedIndex + 1;
             _logger.Debug("List token: List found. New index is {newIndex}.", newIndex);
-
+            
             if (newIndex >= values.Length)
             {
                 _logger.Debug("List token: List depleted. Resetting index.");
@@ -203,10 +205,12 @@ internal sealed unsafe class CommandAliasPlusPlus : IHostedService
                 return values[newIndex];
             }
         }
-
-        _logger.Debug("New list-key encountered. Registering and returning first value.");
-        _listsAndLastGrabbedIndex.Add(list, 0);
-        return list.Split(',', 2)[0];
+        else
+        {
+            _logger.Debug("New list-key encountered. Registering and returning first value.");
+            _listsAndLastGrabbedIndex.Add(list, 0);
+            return list.Split(',', 2)[0];
+        }
     }
 }
 

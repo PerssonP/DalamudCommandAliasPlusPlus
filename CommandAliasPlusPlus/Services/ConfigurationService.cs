@@ -66,7 +66,7 @@ internal class ConfigurationService(IDalamudPluginInterface pluginInterface)
             return;
         }
 
-        // Remove any Error message is all validations pass
+        // Remove any Error message if all validations pass
         command.Error = null;
     }
 
