@@ -57,7 +57,6 @@ internal sealed unsafe class CommandAliasPlusPlus : IHostedService
     public Task StartAsync(CancellationToken cancellationToken)
     {
         _windowService.InitWindows();
-
         _commandManager.AddHandler(CommandService.AliasCommandName, _commandService.AliasCommandInfo);
         _commandManager.AddHandler(CommandService.ConfigCommandName, _commandService.ConfigCommandInfo);
         _executeCommandInnerHook.Enable();
@@ -136,10 +135,10 @@ internal sealed unsafe class CommandAliasPlusPlus : IHostedService
                 .Replace(canonicalCommand, (match) => TranslateToken(match.Groups[1].Value));
             _logger.Information("Detour: Alias was successfully matched and canonical command has been translated into {command}", translatedCommand);
 
-            Utf8String translatedCommandUtf8String = new($"/{translatedCommand}{(originalArgs == null ? "" : " " + originalArgs)}");
+            var translatedCommandUtf8String = Utf8String.FromString($"/{translatedCommand}{(originalArgs == null ? "" : " " + originalArgs)}");
             _logger.Debug("Detour: Executing translated command.");
 
-            _executeCommandInnerHook!.Original(self, &translatedCommandUtf8String, uiModule);
+            _executeCommandInnerHook!.Original(self, translatedCommandUtf8String, uiModule);
             commandConsumed = true;
         }
         catch (Exception ex)

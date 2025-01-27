@@ -45,14 +45,14 @@ Aliases created with CommandAlias++ cannot be used in macros however the /alias 
     /// <summary>
     /// Function that is called when <see cref="AliasCommandName"/> is run.<br />
     /// Grabs the parameters of the command (the requested alias) and sends them to ExecuteCommandInner as a command.
+    /// This will trigger DetourExecuteCommandInner.
     /// </summary>
     /// <param name="alias">The requested alias</param>
     private void HandleAliasCommand(string _, string alias)
     {
         // Extract alias and execute using ExecuteCommandInner to trigger detour
         logger.Debug("Alias triggered: {alias}", alias);
-        Utf8String utf8String = new($"/{alias}");
-        RaptureShellModule.Instance()->ExecuteCommandInner(&utf8String, UIModule.Instance());
+        RaptureShellModule.Instance()->ExecuteCommandInner(Utf8String.FromString($"/{alias}"), UIModule.Instance());
     }
 
     /// <summary>
